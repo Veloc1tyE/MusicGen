@@ -27,10 +27,6 @@ temp = np.zeros(shape=[len(data), len(data[0])*2])
 for i in range(len(data[0])):
     temp[:, 2*i-1] = data[:, i].real
     temp[:, 2*i] = data[:, i].imag
-    
-from sklearn.preprocessing import StandardScaler
-sc = StandardScaler()
-temp = sc.fit_transform(temp)
 
 #data_channel_1 = data.real
 #data_channel_2 = data.imag
@@ -84,9 +80,9 @@ def decoder(sampled_z, rate):
 sampled, mu, logvar = encoder(X_in, rate)
 dec = decoder(sampled, rate)
 
-array_loss = tf.reduce_sum(tf.squared_difference(dec, Y_flat), 1)
-latent_loss = - 0.5 * tf.reduce_sum((1 + logvar - tf.square(mu) - tf.exp(logvar)), reduction_indices = 1)
-loss = tf.reduce_mean(array_loss + latent_loss)
+spectral_loss = tf.sqrt(tf.reduce_sum(tf.squared_difference(dec, Y_flat), 1)/tf.reduce_sum(tf.square(Y_flat)))
+latent_loss = - 0.5 * tf.reduce_sum((1 + logvar - tf.square(mu) - tf.exp(logvar)), 1)
+loss = tf.reduce_mean(spectral_loss + latent_loss)
 
 optimizer = tf.train.AdamOptimizer(0.0005).minimize(loss)
 init=tf.global_variables_initializer()
