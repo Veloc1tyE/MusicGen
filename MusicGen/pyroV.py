@@ -170,7 +170,8 @@ TEST_FREQUENCY = 5
 pyro.clear_param_store()
 
 # Setup the VAR
-vae = VAE()
+USE_CUDA = True
+vae = VAE(use_cuda=USE_CUDA)
 adam_args = {"lr": 1.0e-4}
 optimizer = Adam(adam_args)
 
@@ -184,6 +185,8 @@ import torch.utils.data
 dataset = torch.utils.data.DataLoader(total, batch_size=512)
 for epoch in range(epochs):
     for batch in dataset:
+	if USE_CUDA:
+		batch = batch.cuda()
         loss = 0
         loss += svi.step(batch)
         print(loss)
