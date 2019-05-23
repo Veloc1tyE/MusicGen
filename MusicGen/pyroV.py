@@ -71,7 +71,6 @@ total = rep(data)
 sc = MinMaxScaler((0, 1))
 total = sc.fit_transform(total)
 total = torch.tensor(total, dtype = torch.float32)
-total = total.t()
 var = total.shape[1]
 
 class Encoder(nn.Module):
@@ -191,7 +190,7 @@ for epoch in range(epochs):
     for batch in dataset:
         batch = batch.cuda()
         epoch_loss += svi.step(batch)
-    epoch_loss = epoch_loss / len(total[1])
+    epoch_loss = epoch_loss / len(total)
     print(epoch_loss)
         
         
