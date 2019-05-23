@@ -180,16 +180,19 @@ svi = SVI(vae.model, vae.guide, optimizer, loss=Trace_ELBO())
 train_elbo = []
 test_elbo = []
 
+# setup the inference algorithm
+svi = SVI(vae.model, vae.guide, optimizer, loss=Trace_ELBO())
+
 epochs = 5000
 import torch.utils.data
 dataset = torch.utils.data.DataLoader(total, batch_size=512)
 for epoch in range(epochs):
+    epoch_loss = 0.
     for batch in dataset:
-	if USE_CUDA:
-		batch = batch.cuda()
-        loss = 0
-        loss += svi.step(batch)
-        print(loss)
+        batch = batch.cuda()
+        epoch_loss += svi.step(batch)
+    epoch_loss = epoch_loss / len(total[1])
+    print(epoch_loss)
         
         
     
