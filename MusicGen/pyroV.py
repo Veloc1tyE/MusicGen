@@ -19,7 +19,7 @@ from pyro.optim import Adam
 inputs = 11026
 epochs = 5000    
 batch_size = 512
-z_size = 68
+z_size = 128
 
 assert pyro.__version__.startswith('0.3.3')
 pyro.enable_validation(True)
@@ -117,7 +117,7 @@ class Decoder(nn.Module):
     
 
 class VAE(nn.Module):
-    def __init__(self, z_size=68, var=var, use_cuda=False):
+    def __init__(self, z_size=z_size, var=var, use_cuda=False):
         # Initialise Encoder and Decoder networks
         super(VAE, self).__init__()
         self.encoder = Encoder(z_size, var)
@@ -182,9 +182,8 @@ test_elbo = []
 # setup the inference algorithm
 svi = SVI(vae.model, vae.guide, optimizer, loss=Trace_ELBO())
 
-epochs = 5000
 import torch.utils.data
-dataset = torch.utils.data.DataLoader(total, batch_size=512)
+dataset = torch.utils.data.DataLoader(total, batch_size=batch_size)
 for epoch in range(epochs):
     epoch_loss = 0.
     for batch in dataset:
