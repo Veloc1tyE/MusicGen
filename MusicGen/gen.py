@@ -55,7 +55,7 @@ def encoder(X_in, rate):
         # Variational Autoencoder parameters
         mn     = tf.layers.dense(e, z_size, name="enc_mu")
         sd     = 0.5 * tf.layers.dense(e, z_size, name='enc_sd')  
-        epsilon = tf.random_normal(tf.stack([tf.shape(e)[0], n_latent]))
+        epsilon = tf.random_normal(tf.stack([tf.shape(e)[0], z_size]))
         # Return value
         z  = mn + tf.multiply(epsilon, tf.exp(sd))
         return z, mn, sd
