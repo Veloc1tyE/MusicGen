@@ -32,7 +32,6 @@ process()
 #data_channel_1 = data.real
 #data_channel_2 = data.imag
 
-# Change the epochs variable to define the 
 inputs = outputs = 11026
 epochs = 5000    
 batch_size = 512
