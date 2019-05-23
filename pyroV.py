@@ -187,26 +187,5 @@ for batch in dataset:
     loss += svi.step(batch)
     print(loss)
         
-
-for epoch in range(epochs):
-	epoch_loss = []
-	print("Epoch: " + str(epoch))
-	for i in range(len(total) // batch_size):
-		batch = process_data.get_batch(i, batch_size, total)
-		batch_loss = []
-		_, l = sess.run([training_op, loss], feed_dict={X_in: batch, Y: batch, rate: 0.2})
-		batch_loss.append(l)
-
-
-arr = total[3, :] 
-
-encoder = Encoder(68, 11026)
-decoder = Decoder(68, 11026)
-z_loc, z_scale = encoder(arr)
-z = dist.Normal(z_loc, z_scale).sample()
-sample = decoder(z)
-        
-    svi.step(arr)
-        
         
     
