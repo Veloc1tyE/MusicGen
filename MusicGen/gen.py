@@ -48,30 +48,27 @@ def encoder(X_in, rate):
     # Encoder for the music VAE
     with tf.variable_scope("encoder", reuse=None):
         # Encoder Architecture
-        e1 = tf.layers.dense(X_in, 6800, activation='tanh')
+        e = tf.layers.dense(X_in, 6800, activation='tanh')
         e = tf.nn.dropout(e1, rate=rate)
-        e2 = tf.layers.dense(e, 4600, activation='tanh')
+        e = tf.layers.dense(e, 4600, activation='tanh')
         e = tf.nn.dropout(e2, rate=rate)
-        e3 = tf.layers.dense(e, 2400, activation='tanh')
+        e = tf.layers.dense(e, 2400, activation='tanh')
         # Variational Autoencoder parameters
-        mn     = tf.layers.dense(e3, z_size, name="enc_mu")
-        sd     = 0.5 * tf.layers.dense(e3, z_size, name='enc_sd')  
-        epsilon = tf.random_normal(tf.stack([tf.shape(e3)[0], n_latent]))
+        mn     = tf.layers.dense(e, z_size, name="enc_mu")
+        sd     = 0.5 * tf.layers.dense(e, z_size, name='enc_sd')  
+        epsilon = tf.random_normal(tf.stack([tf.shape(e)[0], n_latent]))
         # Return value
         z  = mn + tf.multiply(epsilon, tf.exp(sd))
-        return z, mn, sd, e1, e2, e3
+        return z, mn, sd
 
 def decoder(sampled_z, rate):
     with tf.variable_scope("decoder", reuse=None):
         # Decoder Architecture
         d = tf.layers.dense(sampled_z, units=2400, activation='tanh')
-        d = e3 + d
         d = tf.nn.dropout(d, rate=rate)
         d = tf.layers.dense(d, 4600, activation='tanh')
-        d = e2 + d
         d = tf.nn.dropout(d, rate=rate)
         d = tf.layers.dense(d, 6800, activation='tanh')
-        d = e1 + d
         d = tf.layers.dense(d, outputs, activation='tanh')
         X = tf.reshape(d, shape=[-1, outputs])
         return X
@@ -101,7 +98,7 @@ def get_data(file_arr):
         #ch2_arr=np.concatenate((ch2_arr, sub_arr2), axis=0)
     return data, rate
 
-z, mn, sd, e1, e2, e3  = encoder(X_in, rate)
+z, mn, sd = encoder(X_in, rate)
 dec = decoder(z, rate)
 
 MSE = tf.reduce_sum(tf.squared_difference(dec, Y_flat), 1)
