@@ -49,9 +49,9 @@ def encoder(X_in, rate):
     with tf.variable_scope("encoder", reuse=None):
         # Encoder Architecture
         e = tf.layers.dense(X_in, 6800, activation='tanh')
-        e = tf.nn.dropout(e1, rate=rate)
+        e = tf.nn.dropout(e, rate=rate)
         e = tf.layers.dense(e, 4600, activation='tanh')
-        e = tf.nn.dropout(e2, rate=rate)
+        e = tf.nn.dropout(e, rate=rate)
         e = tf.layers.dense(e, 2400, activation='tanh')
         # Variational Autoencoder parameters
         mn     = tf.layers.dense(e, z_size, name="enc_mu")
