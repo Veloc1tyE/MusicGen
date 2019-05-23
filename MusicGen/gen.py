@@ -5,7 +5,6 @@ Created on Thu Apr 25 14:44:27 2019
 
 @author: Veloc1ty
 """
-
 import tensorflow as tf
 import numpy as np
 from tensorflow.compat.v1 import ConfigProto
