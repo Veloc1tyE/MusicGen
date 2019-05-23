@@ -5,7 +5,6 @@ Created on Thu May 23 12:06:02 2019
 
 @author: Veloc1ty
 """
-
 import torch
 import pyro
 import torch.nn as nn
@@ -17,7 +16,7 @@ import pyro.distributions as dist
 from pyro.infer import SVI, Trace_ELBO
 from pyro.optim import Adam
 
-inputs = outputs = 11026
+inputs = 11026
 epochs = 5000    
 batch_size = 512
 z_size = 68
@@ -72,6 +71,8 @@ total = rep(data)
 sc = MinMaxScaler((0, 1))
 total = sc.fit_transform(total)
 total = torch.tensor(total, dtype = torch.float32)
+total = total.t()
+var = total.shape[1]
 
 class Encoder(nn.Module):
     def __init__(self, z_size, var):
@@ -87,8 +88,8 @@ class Encoder(nn.Module):
 
     def forward(self, x):
         # define the forward computation on the sample x
-        h1 = self.sigmoid(self.fc1(x))
-        h2 = self.sigmoid(self.fc2(h1))
+        h1 = F.elu(self.fc1(x))
+        h2 = F.elu(self.fc2(h1))
         h3 = self.softplus(self.fc3(h2))
         # Latent Variables
         z_loc = self.fc31(h3)
@@ -109,15 +110,15 @@ class Decoder(nn.Module):
     
     def forward(self, z):
         # Define the forward operation
-        z1 = self.sigmoid(self.fc1(z))
-        z2 = self.sigmoid(self.fc2(z1))
+        z1 = F.elu(self.fc1(z))
+        z2 = F.elu(self.fc2(z1))
         z3 = self.softplus(self.fc3(z2))
         recon = self.sigmoid(self.fc31(z3))
         return recon
     
 
 class VAE(nn.Module):
-    def __init__(self, z_size=68, var=11026, use_cuda=False):
+    def __init__(self, z_size=68, var=var, use_cuda=False):
         # Initialise Encoder and Decoder networks
         super(VAE, self).__init__()
         self.encoder = Encoder(z_size, var)
@@ -148,7 +149,7 @@ class VAE(nn.Module):
             z = pyro.sample("latent", dist.Normal(z_loc, z_scale).to_event(1))
             recon = self.decoder.forward(z)
             # Score against actual constructions
-            pyro.sample("obs", dist.Bernoulli(recon).to_event(1), obs=x.reshape(-1, outputs))
+            pyro.sample("obs", dist.Bernoulli(recon).to_event(1), obs=x.reshape(-1, var))
             return recon
     
     # Define a function for reconstructing samples
@@ -178,35 +179,14 @@ svi = SVI(vae.model, vae.guide, optimizer, loss=Trace_ELBO())
 train_elbo = []
 test_elbo = []
 
-arr = total[60:60+batch_size, :]
-#arr = arr.cuda()
-
+epochs = 5000
+import torch.utils.data
 dataset = torch.utils.data.DataLoader(total, batch_size=512)
-for batch in dataset:
-    loss = 0
-    loss += svi.step(batch)
-    print(loss)
-        
-
 for epoch in range(epochs):
-	epoch_loss = []
-	print("Epoch: " + str(epoch))
-	for i in range(len(total) // batch_size):
-		batch = process_data.get_batch(i, batch_size, total)
-		batch_loss = []
-		_, l = sess.run([training_op, loss], feed_dict={X_in: batch, Y: batch, rate: 0.2})
-		batch_loss.append(l)
-
-
-arr = total[3, :] 
-
-encoder = Encoder(68, 11026)
-decoder = Decoder(68, 11026)
-z_loc, z_scale = encoder(arr)
-z = dist.Normal(z_loc, z_scale).sample()
-sample = decoder(z)
-        
-    svi.step(arr)
+    for batch in dataset:
+        loss = 0
+        loss += svi.step(batch)
+        print(loss)
         
         
     
